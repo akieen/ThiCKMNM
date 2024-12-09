@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BXH La Liga</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .header img {
+            width: 50px; /* Kích thước logo */
+            height: auto;
+        }
+        h1 {
+            margin: 0;
+        }
+        .season-select {
+            margin-left: 20px;
+            padding: 5px;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #fff;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 8px;
+        }
+        .team-cell {
+            text-align: left; /* Căn lề trái */
+            padding-left: 10px; /* Thêm khoảng cách */
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        img {
+            width: 30px;
+            height: auto;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <!-- <img src="" 
+             alt="La Liga Logo"> -->
+        <h1>Bảng Xếp Hạng Serie A</h1>
+      
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Vị trí</th>
+                <th>Đội</th>
+                <th>Trận đã đấu</th>
+                <th>Điểm</th>
+                <th>Hiệu số</th>
+            </tr>
+        </thead>
+        <tbody id="laliga-standings">
+            <tr>
+                <td colspan="5">Đang tải dữ liệu...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        const apiKey = "dfe8a150021fef83d17b006b24aab1f741291569d796bd45fa1edb55b4692d9f";
+        const leagueId = "339"; // La Liga
+        const apiUrlBase = `https://apiv3.apifootball.com/?action=get_standings&league_id=${leagueId}&APIkey=${apiKey}&season=`;
+
+        // Hàm lấy dữ liệu bảng xếp hạng theo mùa giải
+        async function fetchStandings(season) {
+            const apiUrl = `${apiUrlBase}${season}`;
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                console.log(data); // Kiểm tra cấu trúc dữ liệu trả về
+
+                const tableBody = document.getElementById("laliga-standings");
+                tableBody.innerHTML = ""; // Xóa dòng "Đang tải dữ liệu..."
+
+                // Kiểm tra nếu có dữ liệu trả về
+                if (data && Array.isArray(data)) {
+                    data.forEach(team => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${team.overall_league_position}</td>
+                            <td class="team-cell">
+                                <img src="${team.team_badge}" alt="${team.team_name} logo">
+                                ${team.team_name}
+                            </td>
+                            <td>${team.overall_league_payed}</td>
+                            <td>${team.overall_league_PTS}</td>
+                            <td>${team.overall_league_GF - team.overall_league_GA}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    tableBody.innerHTML = `<tr><td colspan="5">Không có dữ liệu cho mùa giải này.</td></tr>`;
+                }
+            } catch (error) {
+                console.error("Error fetching standings:", error);
+                document.getElementById("laliga-standings").innerHTML = ` 
+                    <tr><td colspan="5">Không thể tải dữ liệu. Vui lòng thử lại sau.</td></tr>
+                `;
+            }
+        }
+
+        // Gọi hàm để lấy dữ liệu mùa giải mặc định
+        fetchStandings(2023);
+
+        // Thêm sự kiện thay đổi mùa giải
+        document.getElementById("season-select").addEventListener("change", (event) => {
+            const selectedSeason = event.target.value;
+            fetchStandings(selectedSeason); // Gọi lại hàm fetch khi thay đổi mùa giải
+        });
+    </script>
+</body>
+</html>
